@@ -7,23 +7,39 @@ public class ChatServer {
 	
 	public static void main(String[] args) {
 		boolean started = false;
+		ServerSocket ss = null;
+		Socket s = null;
+		DataInputStream dis = null;
 		try {
-			ServerSocket ss = new ServerSocket(8999);
+			ss = new ServerSocket(8999);
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+		try {
 			started = true;
 			while (started) {
 				boolean bConnected = false;
-				Socket s = ss.accept();			
+				s = ss.accept();			
 System.out.println("a client connected!");
 				bConnected = true;
-				DataInputStream dis = new DataInputStream(s.getInputStream());
+				dis = new DataInputStream(s.getInputStream());
 				while(bConnected){					
 					String str = dis.readUTF();
 					System.out.println(str);
 				}
-				dis.close();
+				//dis.close();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			
+			System.out.println("Client closed!");
+			//e.printStackTrace();
+		} finally {
+			try {
+				if(dis != null) dis.close();
+				if(s != null) s.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 
