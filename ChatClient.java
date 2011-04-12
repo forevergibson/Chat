@@ -12,6 +12,7 @@ public class ChatClient extends Frame{
 	TextArea taContent = new TextArea();
 	
 	Socket s = null;
+	DataOutputStream dos = null;
 	
 	public static void main(String[] args) {
 		new ChatClient().launchFrame();
@@ -27,6 +28,7 @@ public class ChatClient extends Frame{
 
 			@Override
 			public void windowClosing(WindowEvent e) {
+				disConnect();
 				System.exit(0);
 			}
 			
@@ -39,12 +41,24 @@ public class ChatClient extends Frame{
 	public void connect() {
 		try {
 			s = new Socket("127.0.0.1", 8999);
+			dos = new DataOutputStream (s.getOutputStream());
 System.out.println("connected!");
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void disConnect() {
+		try {
+			dos.close();
+			s.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	private class TextFieldListener implements ActionListener {
@@ -56,10 +70,10 @@ System.out.println("connected!");
 			tfTxt.setText("");
 			
 			try {
-				DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+//				DataOutputStream dos = new DataOutputStream(s.getOutputStream());
 				dos.writeUTF(str);
 				dos.flush();
-				dos.close();
+	//			dos.close();
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
