@@ -4,43 +4,82 @@ import java.net.*;
 
 public class ChatServer {
 
+	boolean started = false;
+	ServerSocket ss = null;
 	
 	public static void main(String[] args) {
-		boolean started = false;
-		ServerSocket ss = null;
-		Socket s = null;
-		DataInputStream dis = null;
+		new ChatServer().start();
+	}
+
+	public void start() {
+			
 		try {
 			ss = new ServerSocket(8999);
+		} catch (BindException e){
+			System.out.println("端口使用中...");
+			System.out.println("请关掉相关程序并重新运行服务器！");
+			System.exit(0);
 		} catch (IOException e){
 			e.printStackTrace();
 		}
 		try {
 			started = true;
 			while (started) {
-				boolean bConnected = false;
-				s = ss.accept();			
+				
+				Socket s = ss.accept();
+				Client c = new Client (s);
 System.out.println("a client connected!");
-				bConnected = true;
-				dis = new DataInputStream(s.getInputStream());
-				while(bConnected){					
-					String str = dis.readUTF();
-					System.out.println(str);
-				}
-				//dis.close();
+				new Thread(c).start();
 			}
-		} catch (Exception e) {
-			
-			System.out.println("Client closed!");
-			//e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		} finally {
 			try {
-				if(dis != null) dis.close();
-				if(s != null) s.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
+				ss.close();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}
+	
+	class Client implements Runnable {
 
+		private Socket s = null;
+		private DataInputStream dis = null;
+		private boolean bConnected = false;
+		
+		public Client (Socket s) {
+			this.s = s;
+			try {
+				dis = new DataInputStream(s.getInputStream());
+				bConnected = true;
+			} catch (IOException e) {
+				
+				e.printStackTrace();
+			}
+		}
+		public void run() {			
+				try {
+					while(bConnected){
+						String str = dis.readUTF();
+						System.out.println(str);
+					}
+
+				} catch (EOFException e) {
+					System.out.println("Client closed!");
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					try {
+						if(dis != null) dis.close();
+						if(s != null) s.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+				
+			}
+		}
+		
 }
+
